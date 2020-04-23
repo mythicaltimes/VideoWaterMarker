@@ -18,6 +18,8 @@ namespace VideoWaterMarker
         Stream PreviewImg = new MemoryStream();
         bool FontsSet = false;
         string Title = "Video Watermarker";
+        string ConvertedWithWatermark = "ConvertedWithWatermark";
+
         public Form1()
         {
             InitializeComponent();
@@ -26,116 +28,11 @@ namespace VideoWaterMarker
 
         void ConvertFileWithTextOverlayOnly(string file)
         {
-            try
-            {
-                Font textBrush = new Font(textfont.SelectedItem.ToString(), (int)fontSize.Value);
-                //first, create a dummy bitmap just to get a graphics object
-                Image img = new Bitmap(1, 1);
-                Graphics drawing = Graphics.FromImage(img);
-
-                //measure the string to see how big the image needs to be
-                SizeF textSize = drawing.MeasureString(OverlayText.Text.ToString(), textBrush);
-
-                //free up the dummy image and old graphics object
-                img.Dispose();
-                drawing.Dispose();
-
-                //create a new image of the right size
-                img = new Bitmap((int)textSize.Width, (int)textSize.Height);
-
-                drawing = Graphics.FromImage(img);
-
-                //paint the background
-                drawing.Clear(Color.Transparent);
-
-                string colorName = textColour.SelectedItem.ToString();
-                int Transparency = TransparencySlider.Value;
-                Color newColor = Color.FromArgb(Transparency, Color.FromName(colorName));
-                SolidBrush brush = new SolidBrush(newColor);
-
-                drawing.DrawString(OverlayText.Text.ToString(), textBrush, brush, 0, 0);
-                drawing.Save();
-
-                img.Save(@"text.png", System.Drawing.Imaging.ImageFormat.Png);
-
-                textBrush.Dispose();
-                drawing.Dispose();
-                img.Dispose();
-                brush.Dispose();
-
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Exception error has occured:\n" + e.Message.ToString(), Title);
-            }
-            try
-            {
-                var ffMpeg = new NReco.VideoConverter.FFMpegConverter();
-
-                NReco.VideoConverter.FFMpegInput[] ffMpegInputs = new NReco.VideoConverter.FFMpegInput[] { new FFMpegInput(file), new FFMpegInput(@"text.png") };
-
-                ConvertSettings csettings = new ConvertSettings();
-
-                if (ResizeOptions.Enabled == true)
-                {
-                    csettings.SetVideoFrameSize((int)Xaxis.Value, (int)Yaxis.Value);
-                }
-
-                csettings.AudioCodec = "copy";
-                string arguement = "-filter_complex \"overlay=" + textxaxis.Value.ToString() + ":" + textyaxis.Value.ToString() + "\"";
-
-                csettings.CustomOutputArgs = arguement;
-
-
-                if (FormatChooser.SelectedIndex == 0)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.avi", Format.avi, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 1)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mp4", Format.mp4, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 2)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mv4", Format.m4v, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 3)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.gif", Format.gif, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 4)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mov", Format.mov, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 5)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.wmv", Format.wmv, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 6)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.swf", Format.swf, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 7)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.ogg", Format.ogg, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 8)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mpeg", Format.mpeg, csettings);
-                }
-                else //Nothing selected? Default to .avi format.
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.avi", Format.avi, csettings);
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Exception error has occured:\n" + e.Message.ToString(), Title);
-            }
+            SetTextandGraphics();
+            checkSelectedIndex(FormatChooser.SelectedIndex, file);
         }
 
-
-        void ConvertFileWithTextandWatermark(string file)
+        public void SetTextandGraphics()
         {
             try
             {
@@ -179,6 +76,10 @@ namespace VideoWaterMarker
             {
                 MessageBox.Show("Exception error has occured:\n" + e.Message.ToString(), Title);
             }
+        }
+        void ConvertFileWithTextandWatermark(string file)
+        {
+            SetTextandGraphics();
             try
             {
                 using (var srcImage = Image.FromFile(WatermarkFileChooser.FileName))
@@ -202,11 +103,17 @@ namespace VideoWaterMarker
             {
                 MessageBox.Show("Exception error has occured:\n" + e.Message.ToString(), Title);
             }
+
+            checkSelectedIndex(FormatChooser.SelectedIndex, file);
+        }
+
+        public void checkSelectedIndex(int selectedIndex, string file)
+        {
             try
             {
                 var ffMpeg = new NReco.VideoConverter.FFMpegConverter();
 
-                NReco.VideoConverter.FFMpegInput[] ffMpegInputs = new NReco.VideoConverter.FFMpegInput[] { new FFMpegInput(file), new FFMpegInput(@"Resized.png"), new FFMpegInput(@"text.png") };
+                NReco.VideoConverter.FFMpegInput[] ffMpegInputs = new NReco.VideoConverter.FFMpegInput[] { new FFMpegInput(file), new FFMpegInput(@"text.png") };
 
                 ConvertSettings csettings = new ConvertSettings();
 
@@ -216,52 +123,45 @@ namespace VideoWaterMarker
                 }
 
                 csettings.AudioCodec = "copy";
-                //ffmpeg - i input - i logo1 - i logo2 - filter_complex 'overlay=x=10:y=H-h-10,overlay=x=W-w-10:y=H-h-10' output
-                string arguement = "-filter_complex \"overlay=" + logoxaxis.Value.ToString() + ":" + logoyaxis.Value.ToString() + ",overlay=" + textxaxis.Value.ToString() + ":" + textyaxis.Value.ToString() + "\"";
+                string arguement = "-filter_complex \"overlay=" + textxaxis.Value.ToString() + ":" + textyaxis.Value.ToString() + "\"";
 
                 csettings.CustomOutputArgs = arguement;
 
 
-                if (FormatChooser.SelectedIndex == 0)
+                switch (selectedIndex)
                 {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.avi", Format.avi, csettings);
+                    case 0:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermak.avi", Format.avi, csettings);
+                        break;
+                    case 1:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mp4", Format.mp4, csettings);
+                        break;
+                    case 2:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mv4", Format.m4v, csettings);
+                        break;
+                    case 3:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.gif", Format.gif, csettings);
+                        break;
+                    case 4:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mov", Format.mov, csettings);
+                        break;
+                    case 5:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.wmv", Format.wmv, csettings);
+                        break;
+                    case 6:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.swf", Format.swf, csettings);
+                        break;
+                    case 7:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.ogg", Format.ogg, csettings);
+                        break;
+                    case 8:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mpeg", Format.mpeg, csettings);
+                        break;
+                    default:
+                        ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.avi", Format.avi, csettings);
+                        break;
                 }
-                else if (FormatChooser.SelectedIndex == 1)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mp4", Format.mp4, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 2)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mv4", Format.m4v, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 3)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.gif", Format.gif, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 4)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mov", Format.mov, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 5)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.wmv", Format.wmv, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 6)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.swf", Format.swf, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 7)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.ogg", Format.ogg, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 8)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mpeg", Format.mpeg, csettings);
-                }
-                else //Nothing selected? Default to .avi format.
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.avi", Format.avi, csettings);
-                }
+
             }
             catch (Exception e)
             {
@@ -269,7 +169,6 @@ namespace VideoWaterMarker
             }
 
         }
-    
 
         void ConvertFileWithWatermarkOnly(string file)
         {
@@ -296,70 +195,8 @@ namespace VideoWaterMarker
             {
                 MessageBox.Show("Exception error has occured:\n" + e.Message.ToString(), Title);
             }
-            try
-            {
-                var ffMpeg = new NReco.VideoConverter.FFMpegConverter();
 
-                NReco.VideoConverter.FFMpegInput[] ffMpegInputs = new NReco.VideoConverter.FFMpegInput[] { new FFMpegInput(file), new FFMpegInput(@"Resized.png") };
-
-                ConvertSettings csettings = new ConvertSettings();
-
-                if (ResizeOptions.Enabled == true)
-                {
-                    csettings.SetVideoFrameSize((int)Xaxis.Value, (int)Yaxis.Value);
-                }
-                
-                csettings.AudioCodec = "copy";
-                string arguement = "-filter_complex \"overlay=" + logoxaxis.Value.ToString() + ":" + logoyaxis.Value.ToString() + "\"";
-
-                csettings.CustomOutputArgs = arguement;
-
-
-                if (FormatChooser.SelectedIndex == 0)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.avi", Format.avi, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 1)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mp4", Format.mp4, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 2)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mv4", Format.m4v, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 3)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.gif", Format.gif, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 4)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mov", Format.mov, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 5)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.wmv", Format.wmv, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 6)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.swf", Format.swf, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 7)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.ogg", Format.ogg, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 8)
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.mpeg", Format.mpeg, csettings);
-                }
-                else //Nothing selected? Default to .avi format.
-                {
-                    ffMpeg.ConvertMedia(ffMpegInputs, file + "ConvertedWithWatermark.avi", Format.avi, csettings);
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Exception error has occured:\n" + e.Message.ToString(), Title);
-            }
+            checkSelectedIndex(FormatChooser.SelectedIndex, file);
         }
 
 
@@ -370,75 +207,35 @@ namespace VideoWaterMarker
             {
                 var ffMpeg = new NReco.VideoConverter.FFMpegConverter();
                 var ffMpegInput = new NReco.VideoConverter.FFMpegInput(file);
-                
+
                 ConvertSettings csettings = new ConvertSettings();
                 if (EnableResize.Checked == true)
                 {
                     csettings.SetVideoFrameSize((int)Xaxis.Value, (int)Yaxis.Value);
                 }
 
-
-                if (FormatChooser.SelectedIndex == 0)
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.avi", Format.avi, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 1)
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.mp4", Format.mp4, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 2)
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.m4v", Format.m4v, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 3)
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.gif", Format.gif, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 4)
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.mov", Format.mov, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 5)
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.wmv", Format.wmv, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 6)
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.swf", Format.swf, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 7)
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.ogg", Format.ogg, csettings);
-                }
-                else if (FormatChooser.SelectedIndex == 8)
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.mpeg", Format.mpeg, csettings);
-                }
-                else //Nothing selected? Default to .avi format.
-                {
-                    ffMpeg.ConvertMedia(file, ffMpegInput.Format, file + "Converted.avi", ffMpegInput.Format, csettings);
-                }
+                checkSelectedIndex(FormatChooser.SelectedIndex, file);
 
             }
             catch (Exception e)
             {
                 MessageBox.Show("Exception error has occured:\n" + e.Message.ToString(), Title);
             }
-        }   
+        }
 
         private void ExportBtn_Click(object sender, EventArgs e)
         {
-            if(VideoFileChooser.FileName != "")
+            if (VideoFileChooser.FileName != "")
             {
                 if (EnableWatermarkChkBx.Checked == true && EnableTextOverlayChk.Checked == false)
                 {
                     ConvertFileWithWatermarkOnly(VideoFileChooser.FileName.ToString());
                 }
-                else if(EnableTextOverlayChk.Checked == true && EnableWatermarkChkBx.Checked == false)
+                else if (EnableTextOverlayChk.Checked == true && EnableWatermarkChkBx.Checked == false)
                 {
                     ConvertFileWithTextOverlayOnly(VideoFileChooser.FileName.ToString());
                 }
-                else if(EnableTextOverlayChk.Checked == true && EnableWatermarkChkBx.Checked == true)
+                else if (EnableTextOverlayChk.Checked == true && EnableWatermarkChkBx.Checked == true)
                 {
                     ConvertFileWithTextandWatermark(VideoFileChooser.FileName.ToString());
                 }
@@ -467,7 +264,7 @@ namespace VideoWaterMarker
                 ffMpeg.GetVideoThumbnail(VideoFileChooser.FileName.ToString(), PreviewImg);
                 ThumbNailPicture.Image = Image.FromStream(PreviewImg);
                 EnableWatermarkChkBx.Enabled = true;
-            } 
+            }
         }
 
         void UpdatePreview()
@@ -477,12 +274,12 @@ namespace VideoWaterMarker
             {
                 using (var newImage = new Bitmap(srcImage.Width, srcImage.Height))
                 using (var graphics = Graphics.FromImage(newImage))
-                { 
+                {
                     graphics.SmoothingMode = SmoothingMode.HighQuality;
                     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
                     graphics.DrawImage(srcImage, new Rectangle(0, 0, srcImage.Width, srcImage.Height));
-                   
+
                     newImage.Save(tempImg, System.Drawing.Imaging.ImageFormat.Bmp);
                     newImage.Dispose();
                     srcImage.Dispose();
@@ -554,7 +351,7 @@ namespace VideoWaterMarker
                                 textBrush.Dispose();
                                 brush.Dispose();
                             }
-                            
+
                             tempImg.SetLength(0);
                             tempImg.Position = 0;
                             newImage.Save(tempImg, System.Drawing.Imaging.ImageFormat.Bmp);
@@ -568,6 +365,10 @@ namespace VideoWaterMarker
             }
         }
 
+        public void SetFontandBrush()
+        {
+
+        }
 
         private void EnableResize_CheckedChanged(object sender, EventArgs e)
         {
@@ -586,7 +387,7 @@ namespace VideoWaterMarker
                 WatermarkYsize.Enabled = true;
                 logoxaxis.Enabled = true;
                 logoyaxis.Enabled = true;
-            }     
+            }
         }
 
         private void EnableWatermarkChkBx_CheckedChanged(object sender, EventArgs e)

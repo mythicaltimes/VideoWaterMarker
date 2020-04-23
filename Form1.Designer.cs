@@ -106,7 +106,8 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox1.Controls.Add(this.EnableTextOverlayChk);
             this.groupBox1.Controls.Add(this.EnableWatermarkChkBx);
             this.groupBox1.Controls.Add(this.WatermarkOptions);
@@ -424,6 +425,7 @@
             // 
             // FormatChooser
             // 
+            this.FormatChooser.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.FormatChooser.FormattingEnabled = true;
             this.FormatChooser.Items.AddRange(new object[] {
             ".avi format",
@@ -439,7 +441,6 @@
             this.FormatChooser.Name = "FormatChooser";
             this.FormatChooser.Size = new System.Drawing.Size(131, 21);
             this.FormatChooser.TabIndex = 5;
-            this.FormatChooser.Text = "Choose Output Format";
             // 
             // ChooseVidBtn
             // 
@@ -702,6 +703,8 @@
             this.Controls.Add(this.ExportBtn);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(1096, 608);
+            this.MinimumSize = new System.Drawing.Size(1096, 608);
             this.Name = "Form1";
             this.Text = "Video Water Marker (v2.0) - Written by Spencer Elliott";
             this.groupBox1.ResumeLayout(false);
